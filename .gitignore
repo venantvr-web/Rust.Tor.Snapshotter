@@ -1,0 +1,13 @@
+/target
+/data
+/snapshots
+/dist
+service_account.json
+*.db
+*.db-journal
+.DS_Store
+.env
+.env.*
+.idea/
+.vscode/
+.claude/

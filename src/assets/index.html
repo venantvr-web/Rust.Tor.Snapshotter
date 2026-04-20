@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rust.Tor.Snapshotter</title>
+<link rel="stylesheet" href="/styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="dot"></span>
+    <h1>Rust.Tor.Snapshotter</h1>
+    <span class="subtitle">// periodic www capture via tor → drive</span>
+  </div>
+  <nav>
+    <button class="tab active" data-tab="snapshots">Snapshots</button>
+    <button class="tab" data-tab="targets">Targets</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </nav>
+</header>
+
+<main>
+  <!-- SNAPSHOTS -->
+  <section id="tab-snapshots" class="tab-panel active">
+    <div class="toolbar">
+      <select id="filter-target"><option value="">all targets</option></select>
+      <button id="btn-refresh" class="ghost">refresh</button>
+      <button id="btn-trigger" class="primary">run now ▸</button>
+    </div>
+
+    <div class="split">
+      <aside class="snaplist">
+        <table id="snapshots">
+          <thead>
+            <tr><th>when</th><th>host</th><th>size</th><th>sha</th><th>status</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p id="snap-empty" class="empty hidden">no snapshot yet.</p>
+      </aside>
+      <article class="viewer">
+        <div class="viewer-head">
+          <span id="viewer-title">select a snapshot</span>
+          <span class="spacer"></span>
+          <button id="view-mode-rendered" class="ghost active">rendered</button>
+          <button id="view-mode-source" class="ghost">source</button>
+          <a id="view-download" class="ghost" href="#" target="_blank" hidden>raw ↗</a>
+        </div>
+        <iframe id="viewer-frame" sandbox="allow-same-origin" src="about:blank"></iframe>
+        <pre id="viewer-source" class="hidden"></pre>
+      </article>
+    </div>
+  </section>
+
+  <!-- TARGETS -->
+  <section id="tab-targets" class="tab-panel">
+    <form id="target-form" class="row">
+      <input type="url" id="target-url" placeholder="https://example.com" required>
+      <button type="submit" class="primary">add</button>
+    </form>
+    <table id="targets">
+      <thead><tr><th>#</th><th>url</th><th>active</th><th>added</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="tab-settings" class="tab-panel">
+    <form id="settings-form" class="stack">
+      <label>
+        <span>interval (seconds)</span>
+        <input type="number" name="interval_secs" min="10" required>
+      </label>
+      <label>
+        <span>tor socks proxy</span>
+        <input type="text" name="tor_socks" placeholder="socks5h://tor:9050" required>
+        <em>use socks5h:// to route DNS through tor</em>
+      </label>
+      <label>
+        <span>http timeout (seconds)</span>
+        <input type="number" name="http_timeout_secs" min="5" required>
+      </label>
+      <label>
+        <span>user-agent</span>
+        <input type="text" name="user_agent">
+      </label>
+
+      <fieldset>
+        <legend>google drive</legend>
+
+        <label class="inline">
+          <input type="checkbox" name="drive_enabled">
+          <span>upload snapshots to drive</span>
+        </label>
+
+        <label>
+          <span>target folder id</span>
+          <input type="text" name="drive_folder_id" placeholder="1aBc...">
+          <em>extract from the folder URL: drive.google.com/drive/folders/<b>&lt;ID&gt;</b></em>
+        </label>
+
+        <div class="sa-box">
+          <div class="sa-status">
+            <span class="sa-dot off" id="sa-dot"></span>
+            <span id="sa-status-text">checking…</span>
+            <span class="spacer"></span>
+            <button type="button" id="sa-test" class="ghost" disabled>test upload</button>
+            <button type="button" id="sa-delete" class="ghost danger" disabled>remove</button>
+          </div>
+
+          <div class="sa-dropzone" id="sa-dropzone">
+            <input type="file" id="sa-file" accept="application/json,.json" hidden>
+            <p><strong>drop service_account.json here</strong> or <a href="#" id="sa-pick">browse</a></p>
+            <em>stored at /data/service_account.json (chmod 600). share your drive folder with the SA email.</em>
+          </div>
+
+          <p id="sa-msg" class="muted"></p>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="submit" class="primary">save</button>
+        <span id="settings-status" class="muted"></span>
+      </div>
+    </form>
+  </section>
+</main>
+
+<footer><span class="muted">v0.2 · <a href="/api/health">health</a></span></footer>
+
+<script src="/app.js"></script>
+</body>
+</html>

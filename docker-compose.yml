@@ -1,0 +1,36 @@
+services:
+  tor:
+    image: osminogin/tor-simple:latest
+    container_name: torsnap-tor
+    restart: unless-stopped
+    networks:
+      - torsnap
+    # Pas d'exposition publique : l'app y accède via le réseau interne.
+
+  app:
+    build:
+      context: .
+      args:
+        PORT: ${PORT:-8080}
+    image: ghcr.io/venantvr-web/rust.tor.snapshotter:latest
+    container_name: torsnap-app
+    restart: unless-stopped
+    depends_on:
+      - tor
+    networks:
+      - torsnap
+    ports:
+      # Port hôte -> port conteneur. Les deux sont surchargeables :
+      #   HOST_PORT=9090 PORT=9090 docker compose up
+      - "${HOST_PORT:-8080}:${PORT:-8080}"
+    volumes:
+      - ./data:/data
+    environment:
+      PORT: ${PORT:-8080}
+      RUST_LOG: info
+      # Le worker lit tor_socks en base ; valeur initialisée au 1er boot,
+      # modifiable ensuite dans l'UI.
+
+networks:
+  torsnap:
+    driver: bridge

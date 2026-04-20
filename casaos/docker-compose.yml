@@ -1,0 +1,75 @@
+# Manifest compose pour CasaOS
+# À coller dans « Custom Install » du CasaOS App Store,
+# ou à déposer dans /var/lib/casaos/apps/rust-tor-snapshotter/docker-compose.yml
+name: rust-tor-snapshotter
+services:
+  tor:
+    image: osminogin/tor-simple:latest
+    container_name: rust-tor-snapshotter-tor
+    restart: unless-stopped
+    networks:
+      - torsnap
+
+  app:
+    image: ghcr.io/venantvr-web/rust.tor.snapshotter:latest
+    container_name: rust-tor-snapshotter-app
+    restart: unless-stopped
+    depends_on:
+      - tor
+    networks:
+      - torsnap
+    ports:
+      # Port hôte configurable via la variable CasaOS HOST_PORT (défaut 8787) ;
+      # le port interne de l'app suit PORT (défaut 8080).
+      - target: ${PORT:-8080}
+        published: "${HOST_PORT:-8787}"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: /DATA/AppData/rust-tor-snapshotter
+        target: /data
+    environment:
+      PORT: ${PORT:-8080}
+      RUST_LOG: info
+    x-casaos:
+      envs:
+        - container: PORT
+          description:
+            en_us: Port interne d'écoute de l'application (défaut 8080)
+        - container: RUST_LOG
+          description:
+            en_us: Niveau de log (info|debug|warn)
+      ports:
+        - container: "${PORT:-8080}"
+          description:
+            en_us: Interface web / API
+      volumes:
+        - container: /data
+          description:
+            en_us: Données persistantes (SQLite, snapshots, service_account.json)
+
+networks:
+  torsnap:
+    driver: bridge
+
+x-casaos:
+  architectures:
+    - amd64
+    - arm64
+  main: app
+  description:
+    en_us: |
+      Snapshotter périodique de pages web routé via Tor, avec une UI web pour
+      configurer les cibles, parcourir le HTML capturé, et miroiter
+      optionnellement les snapshots dans un dossier Google Drive via un
+      service account.
+  tagline:
+    en_us: Snapshots de pages via Tor, avec dashboard
+  developer: venantvr-web
+  author: venantvr
+  icon: https://raw.githubusercontent.com/venantvr-web/Rust.Tor.Snapshotter/main/icon.png
+  thumbnail: https://raw.githubusercontent.com/venantvr-web/Rust.Tor.Snapshotter/main/thumb.png
+  title:
+    en_us: Rust.Tor.Snapshotter
+  category: Utilities
+  port_map: "${HOST_PORT:-8787}"

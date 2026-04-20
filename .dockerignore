@@ -1,0 +1,13 @@
+target/
+data/
+snapshots/
+service_account.json
+*.db
+*.db-journal
+.git/
+.github/
+.gitignore
+README.md
+CLAUDE.md
+.idea/
+.vscode/
